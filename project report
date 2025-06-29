@@ -1,0 +1,124 @@
+🗒️ UNIDEV Notes Application – Project Report
+1. 📌 Project Description
+This project aims to develop a simple yet functional mobile application that allows users to easily create, edit, and categorize text-based notes.
+
+2. ✅ Application Requirements
+Functional Requirements:
+
+Add new notes
+
+Edit existing notes
+
+Delete notes
+
+Assign categories (tags) to notes
+
+(Optional) Search notes by content or category
+
+Technical Requirements:
+
+Platforms: iOS and Android
+
+Development Environment: Flutter (Dart)
+
+Single codebase for both platforms
+
+Rapid prototyping capabilities
+
+Rich UI components
+
+Data Storage:
+
+Local storage via Hive or SharedPreferences
+
+(Optionally) Cloud synchronization using Firebase
+
+3. 🎨 User Interface (UI) Design
+Screens:
+
+Home Screen (Note List)
+
+Displays all saved notes
+
+Category tag shown alongside each note
+
+A “+” button to add new notes
+
+Long press options: “Edit” and “Delete”
+
+Add/Edit Note Screen
+
+Fields for title, note content, and category selector
+
+Save button
+
+Category Management (Optional)
+
+Users can define custom categories/tags
+
+Design Principles:
+
+Material Design (Android-friendly)
+
+Simple, clean, and minimal UI
+
+High contrast and large font sizes for readability
+
+4. 🔧 Application Development Process
+Tools Used:
+
+Flutter SDK
+
+Dart Programming Language
+
+Visual Studio Code / Android Studio
+
+Figma (for UI prototyping)
+
+Development Steps:
+
+Flutter project initialized
+
+Note model defined (title, content, category, date)
+
+Hive local database integrated
+
+Home screen and edit screen implemented
+
+Tagging system and filtering logic added
+
+Basic functional tests conducted
+
+Application tested on Android Emulator and iOS Simulator
+
+5. 📦 Submission Package (ZIP)
+The ZIP archive should be organized as follows:
+
+css
+Kopyala
+Düzenle
+UNIDEV_Notes_App/
+├── README.md
+├── Project_Report.pdf
+├── UI_Prototypes/
+│   └── screen_designs.png
+├── Source_Code/
+│   ├── lib/
+│   │   └── main.dart
+│   │   └── note_model.dart
+│   │   └── add_note.dart
+│   └── pubspec.yaml
+└── Screenshots/
+    └── home_screen.png
+    └── add_note_screen.png
+6. 📝 Additional Suggestions (Optional Features)
+Google Drive synchronization
+
+Dark mode support
+
+Reminder notifications
+
+Color-coded notes by priority or type
+
+7. 🔚 Conclusion
+This project delivers a fast, simple, and effective note-taking application that users can easily integrate into their daily lives. Developed with Flutter, it ensures compatibility and smooth performance across both Android and iOS platforms.
