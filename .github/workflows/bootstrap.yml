@@ -1,0 +1,39 @@
+# Temporary: generates the Android/iOS/web platform folders with `flutter create` and
+# formats the code, then commits the result to the work branch. Removed before merging.
+name: bootstrap
+
+on:
+  push:
+    branches: [rework]
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter --version
+      - name: Generate platform folders (only files that don't exist yet)
+        run: |
+          if [ ! -d android ]; then
+            flutter create --platforms=android,ios,web --org io.github.sayko89 \
+              --project-name unidev_note_app .
+            rm -f test/widget_test.dart   # template counter-app test
+          fi
+      - run: flutter pub get
+      - name: Format
+        run: dart format .
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "Generate platform folders and format code (flutter create, dart format)"
+          git push

@@ -1,0 +1,23 @@
+name: unidev_note_app
+description: UNIDEV Notlar — a local-first note-taking app for Android, iOS and the web, built with Flutter.
+publish_to: none
+version: 2.0.0+2
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  hive_ce: ^2.22.0
+  hive_ce_flutter: ^2.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
