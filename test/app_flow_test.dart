@@ -140,6 +140,7 @@ void main() {
     await tester.tap(find.byTooltip('Yeni not'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('title-field')), 'Yarım kalan');
+    await tester.pump();
 
     await tester.binding.handlePopRoute(); // Android back button / gesture
     await tester.pumpAndSettle();
