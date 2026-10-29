@@ -141,7 +141,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('title-field')), 'Yarım kalan');
 
-    await tester.pageBack();
+    await tester.binding.handlePopRoute(); // Android back button / gesture
     await tester.pumpAndSettle();
     expect(find.text('Değişiklikler kaydedilmedi'), findsOneWidget);
 
@@ -149,7 +149,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Yarım kalan'), findsOneWidget); // still editing
 
-    await tester.pageBack();
+    await tester.binding.handlePopRoute(); // Android back button / gesture
     await tester.pumpAndSettle();
     await tester.tap(find.text('Kaydetmeden çık'));
     await tester.pumpAndSettle();
@@ -161,7 +161,7 @@ void main() {
     await _pumpApp(tester);
     await tester.tap(find.byTooltip('Yeni not'));
     await tester.pumpAndSettle();
-    await tester.pageBack();
+    await tester.binding.handlePopRoute(); // Android back button / gesture
     await tester.pumpAndSettle();
     expect(find.text('Değişiklikler kaydedilmedi'), findsNothing);
     expect(find.text('Notlarım'), findsOneWidget);
