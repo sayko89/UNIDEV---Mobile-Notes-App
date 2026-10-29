@@ -18,9 +18,11 @@ jobs:
       - run: flutter --version
       - run: flutter pub get
       - name: Check formatting
-        run: dart format --output=none --set-exit-if-changed .
-      - run: flutter analyze
-      - run: flutter test --reporter expanded
+        run: tool/ci_run.sh "dart format" dart format --output=none --set-exit-if-changed .
+      - name: Analyze
+        run: tool/ci_run.sh "flutter analyze" flutter analyze
+      - name: Test
+        run: tool/ci_run.sh "flutter test" flutter test --reporter expanded
 
   android:
     name: build · Android APK
@@ -36,7 +38,8 @@ jobs:
         with:
           channel: stable
           cache: true
-      - run: flutter build apk --release
+      - name: Build APK
+        run: tool/ci_run.sh "flutter build apk" flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
           name: unidev-notlar-apk
@@ -52,7 +55,8 @@ jobs:
         with:
           channel: stable
           cache: true
-      - run: flutter build ios --release --no-codesign
+      - name: Build iOS
+        run: tool/ci_run.sh "flutter build ios" flutter build ios --release --no-codesign
 
   web:
     name: build · web
@@ -64,8 +68,60 @@ jobs:
         with:
           channel: stable
           cache: true
-      - run: flutter build web --release
+      - name: Build web
+        run: tool/ci_run.sh "flutter build web" flutter build web --release
       - uses: actions/upload-artifact@v4
         with:
           name: web-build
           path: build/web
+
+  screenshots:
+    name: screenshots (work branch only)
+    if: github.ref == 'refs/heads/rework'
+    needs: web
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: build/web
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+      - name: Take screenshots
+        run: |
+          python3 -m http.server 8080 -d build/web > /dev/null 2>&1 &
+          sleep 2
+          node tool/screenshots.mjs http://localhost:8080 docs/screenshots
+      - name: Turn the recording into a GIF
+        run: |
+          video=$(ls docs/screenshots/_video/*.webm 2>/dev/null | head -1 || true)
+          if [ -n "$video" ]; then
+            ffmpeg -y -loglevel error -i "$video" -vf "fps=14,scale=360:-1:flags=lanczos,palettegen=stats_mode=diff" /tmp/palette.png
+            ffmpeg -y -loglevel error -i "$video" -i /tmp/palette.png \
+              -lavfi "fps=14,scale=360:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=4" docs/screenshots/flow.gif
+          fi
+          rm -rf docs/screenshots/_video
+      - name: Report
+        if: always()
+        run: |
+          body="$(cat docs/screenshots/_log.txt 2>/dev/null || echo 'no log')"
+          body="${body//'%'/'%25'}"; body="${body//$'\n'/'%0A'}"
+          echo "::notice title=screenshot log::${body}"
+          rm -f docs/screenshots/_log.txt
+      - name: Commit screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "Update screenshots from the web build"
+          git pull --rebase origin rework
+          git push origin HEAD:rework
