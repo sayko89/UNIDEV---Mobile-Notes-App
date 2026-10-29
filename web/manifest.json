@@ -1,11 +1,11 @@
 {
-    "name": "unidev_note_app",
-    "short_name": "unidev_note_app",
+    "name": "UNIDEV Notlar",
+    "short_name": "Notlar",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F0F0EE",
+    "theme_color": "#3B7A93",
+    "description": "Not al, düzenle, kategorilere ayır.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
