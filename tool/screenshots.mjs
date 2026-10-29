@@ -19,7 +19,10 @@ const note = (msg) => { console.log(msg); log.push(msg); };
 
 const browser = await chromium.launch();
 
+let readyAfterMs = 0;
+
 async function open(query, { theme = 'light', video = false } = {}) {
+  const started = Date.now();
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
     deviceScaleFactor: 3,
@@ -35,6 +38,7 @@ async function open(query, { theme = 'light', video = false } = {}) {
   // Flutter's "Enable accessibility" button sits off-screen; trigger it directly.
   await page.evaluate(() => document.querySelector('flt-semantics-placeholder')?.click());
   await page.waitForTimeout(800);
+  readyAfterMs = Date.now() - started;
   return { context, page };
 }
 
@@ -103,6 +107,7 @@ await step('editor', async () => {
   await tap(page, 'Yeni not');
   await page.keyboard.type('Proje teslimi', { delay: 30 });
   await page.keyboard.press('Tab');
+  await page.waitForTimeout(400);
   await page.keyboard.type('Ekran görüntülerini ekle\nREADME’yi güncelle\nCuma 17:00’ye kadar gönder', { delay: 15 });
   await tap(page, 'İş', 500);
   await shot(page, '03-editor.png');
@@ -118,7 +123,7 @@ await step('menu', async () => {
 
 await step('filter', async () => {
   const { context, page } = await open('&demo=1');
-  await tap(page, 'Okul');
+  await tap(page, /^Okul\s+1$/); // the filter chip ("Okul  1"), not the category label on a card
   await shot(page, '05-filter.png');
   await context.close();
 });
@@ -144,6 +149,7 @@ await step('flow video', async () => {
   await tap(page, 'Yeni not', 800);
   await page.keyboard.type('Kahve molası', { delay: 60 });
   await page.keyboard.press('Tab');
+  await page.waitForTimeout(400);
   await page.keyboard.type('Saat 15:00, kampüs kafe', { delay: 45 });
   await tap(page, 'Kişisel', 600);
   await tap(page, 'Kaydet', 1400);
@@ -152,7 +158,11 @@ await step('flow video', async () => {
   await tap(page, 'Geri al', 1600);
   const video = page.video();
   await context.close();
-  if (video) note(`video: ${await video.path()}`);
+  if (video) {
+    note(`video: ${await video.path()}`);
+    // The recording starts while the app is still loading; the GIF skips that part.
+    writeFileSync(`${out}/_video/start.txt`, String(Math.max(0, readyAfterMs - 300) / 1000));
+  }
 });
 
 await browser.close();

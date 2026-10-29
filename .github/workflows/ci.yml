@@ -105,8 +105,9 @@ jobs:
         run: |
           video=$(ls docs/screenshots/_video/*.webm 2>/dev/null | head -1 || true)
           if [ -n "$video" ]; then
-            ffmpeg -y -loglevel error -i "$video" -vf "fps=14,scale=360:-1:flags=lanczos,palettegen=stats_mode=diff" /tmp/palette.png
-            ffmpeg -y -loglevel error -i "$video" -i /tmp/palette.png \
+            start=$(cat docs/screenshots/_video/start.txt 2>/dev/null || echo 0)
+            ffmpeg -y -loglevel error -ss "$start" -i "$video" -vf "fps=14,scale=360:-1:flags=lanczos,palettegen=stats_mode=diff" /tmp/palette.png
+            ffmpeg -y -loglevel error -ss "$start" -i "$video" -i /tmp/palette.png \
               -lavfi "fps=14,scale=360:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=4" docs/screenshots/flow.gif
           fi
           rm -rf docs/screenshots/_video
