@@ -52,10 +52,7 @@ class NoteCard extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 10),
-              Text(
-                formatRelative(note.updatedAt),
-                style: theme.textTheme.labelSmall?.copyWith(color: muted),
-              ),
+              Text(formatRelative(note.updatedAt), style: theme.textTheme.labelSmall?.copyWith(color: muted)),
             ],
           ),
         ),

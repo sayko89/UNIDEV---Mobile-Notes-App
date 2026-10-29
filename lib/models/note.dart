@@ -38,13 +38,7 @@ class Note {
   /// True when the note was changed after it was created.
   bool get wasEdited => updatedAt.difference(createdAt).inSeconds >= 1;
 
-  Note copyWith({
-    String? id,
-    String? title,
-    String? content,
-    String? category,
-    DateTime? updatedAt,
-  }) {
+  Note copyWith({String? id, String? title, String? content, String? category, DateTime? updatedAt}) {
     return Note(
       id: id ?? this.id,
       title: title ?? this.title,

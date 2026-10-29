@@ -4,17 +4,23 @@ library;
 /// Lower-cases text for searching, treating the Turkish dotted and dotless i (İ, I, ı, i)
 /// as the same letter — so "iş", "İŞ" and "IS" all find a note titled "İş planı".
 String foldForSearch(String text) {
-  return text
-      .replaceAll('İ', 'i')
-      .replaceAll('I', 'i')
-      .replaceAll('ı', 'i')
-      .toLowerCase();
+  return text.replaceAll('İ', 'i').replaceAll('I', 'i').replaceAll('ı', 'i').toLowerCase();
 }
 
 const _shortMonths = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
 const _months = [
-  'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-  'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
+  'Ocak',
+  'Şubat',
+  'Mart',
+  'Nisan',
+  'Mayıs',
+  'Haziran',
+  'Temmuz',
+  'Ağustos',
+  'Eylül',
+  'Ekim',
+  'Kasım',
+  'Aralık',
 ];
 
 String _two(int n) => n.toString().padLeft(2, '0');

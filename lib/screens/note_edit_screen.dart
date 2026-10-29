@@ -70,14 +70,15 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
   Future<void> _confirmDiscard() async {
     final discard = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Değişiklikler kaydedilmedi'),
-        content: const Text('Kaydetmeden çıkarsan yaptığın değişiklikler kaybolur.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Düzenlemeye dön')),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Kaydetmeden çık')),
-        ],
-      ),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Değişiklikler kaydedilmedi'),
+            content: const Text('Kaydetmeden çıkarsan yaptığın değişiklikler kaybolur.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Düzenlemeye dön')),
+              TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Kaydetmeden çık')),
+            ],
+          ),
     );
     if (discard == true) _close();
   }
@@ -93,9 +94,9 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     Widget label(String text) => Padding(
-          padding: const EdgeInsets.only(bottom: 8, left: 4),
-          child: Text(text, style: theme.textTheme.titleSmall),
-        );
+      padding: const EdgeInsets.only(bottom: 8, left: 4),
+      child: Text(text, style: theme.textTheme.titleSmall),
+    );
 
     return PopScope<Object?>(
       canPop: _closing || !_hasChanges,

@@ -10,8 +10,8 @@ import 'util/text.dart';
 /// Widgets listen to it (it is a [ChangeNotifier]); every change is written to the [NoteStore].
 class NotesController extends ChangeNotifier {
   NotesController(this._store, {DateTime Function()? clock, String Function()? idGenerator})
-      : _clock = clock ?? DateTime.now,
-        _newId = idGenerator ?? generateId {
+    : _clock = clock ?? DateTime.now,
+      _newId = idGenerator ?? generateId {
     _notes = _store.loadNotes();
     final saved = _store.loadCategories();
     _categories = saved.isEmpty ? [...defaultCategories] : [...saved];
@@ -45,12 +45,14 @@ class NotesController extends ChangeNotifier {
   /// Notes matching the category filter and the search text.
   List<Note> get visibleNotes {
     final words = foldForSearch(_query).split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
-    return _sorted(_notes.where((note) {
-      if (_filter != null && note.category != _filter) return false;
-      if (words.isEmpty) return true;
-      final haystack = foldForSearch('${note.title}\n${note.content}\n${note.category}');
-      return words.every(haystack.contains);
-    }));
+    return _sorted(
+      _notes.where((note) {
+        if (_filter != null && note.category != _filter) return false;
+        if (words.isEmpty) return true;
+        final haystack = foldForSearch('${note.title}\n${note.content}\n${note.category}');
+        return words.every(haystack.contains);
+      }),
+    );
   }
 
   /// Number of notes in [category], or of all notes when it is null.
@@ -151,10 +153,9 @@ class NotesController extends ChangeNotifier {
   }
 
   static List<Note> _sorted(Iterable<Note> notes) {
-    return notes.toList()
-      ..sort((a, b) {
-        final byTime = b.updatedAt.compareTo(a.updatedAt);
-        return byTime != 0 ? byTime : b.id.compareTo(a.id);
-      });
+    return notes.toList()..sort((a, b) {
+      final byTime = b.updatedAt.compareTo(a.updatedAt);
+      return byTime != 0 ? byTime : b.id.compareTo(a.id);
+    });
   }
 }

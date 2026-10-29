@@ -6,15 +6,15 @@ import '../screens/note_detail_screen.dart';
 import '../screens/note_edit_screen.dart';
 
 Future<void> openNoteEditor(BuildContext context, NotesController controller, {Note? note}) {
-  return Navigator.of(context).push(
-    MaterialPageRoute<void>(builder: (_) => NoteEditScreen(controller: controller, note: note)),
-  );
+  return Navigator.of(
+    context,
+  ).push(MaterialPageRoute<void>(builder: (_) => NoteEditScreen(controller: controller, note: note)));
 }
 
 Future<void> openNoteDetail(BuildContext context, NotesController controller, Note note) {
-  return Navigator.of(context).push(
-    MaterialPageRoute<void>(builder: (_) => NoteDetailScreen(controller: controller, noteId: note.id)),
-  );
+  return Navigator.of(
+    context,
+  ).push(MaterialPageRoute<void>(builder: (_) => NoteDetailScreen(controller: controller, noteId: note.id)));
 }
 
 /// Deletes the note at once and offers "Geri al" (undo) — quicker than asking first,
@@ -36,38 +36,39 @@ Future<void> showNoteMenu(BuildContext context, NotesController controller, Note
   final messenger = ScaffoldMessenger.of(context);
   return showModalBottomSheet<void>(
     context: context,
-    builder: (sheetContext) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-            child: Text(
-              note.displayTitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(sheetContext).textTheme.titleSmall,
-            ),
+    builder:
+        (sheetContext) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Text(
+                  note.displayTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(sheetContext).textTheme.titleSmall,
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('Düzenle'),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  openNoteEditor(context, controller, note: note);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.delete_outline, color: Theme.of(sheetContext).colorScheme.error),
+                title: Text('Sil', style: TextStyle(color: Theme.of(sheetContext).colorScheme.error)),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  deleteWithUndo(messenger, controller, note);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
           ),
-          ListTile(
-            leading: const Icon(Icons.edit_outlined),
-            title: const Text('Düzenle'),
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              openNoteEditor(context, controller, note: note);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.delete_outline, color: Theme.of(sheetContext).colorScheme.error),
-            title: Text('Sil', style: TextStyle(color: Theme.of(sheetContext).colorScheme.error)),
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              deleteWithUndo(messenger, controller, note);
-            },
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    ),
+        ),
   );
 }

@@ -20,8 +20,7 @@ class LegacyNoteAdapter extends TypeAdapter<LegacyNote> {
   final int typeId = 0;
 
   @override
-  LegacyNote read(BinaryReader reader) =>
-      LegacyNote(reader.readString(), reader.readString(), reader.readString());
+  LegacyNote read(BinaryReader reader) => LegacyNote(reader.readString(), reader.readString(), reader.readString());
 
   @override
   void write(BinaryWriter writer, LegacyNote obj) {

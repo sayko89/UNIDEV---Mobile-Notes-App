@@ -15,15 +15,31 @@ List<Note> demoNotes(DateTime now) {
   }
 
   return [
-    note('demo-1', 'Market listesi', 'Süt\nYumurta\nTam buğday ekmek\nMuz\nKahve çekirdeği', 'Kişisel',
-        const Duration(days: 2), edited: const Duration(minutes: 4)),
-    note('demo-2', 'Haftalık toplantı', 'Sprint hedefleri gözden geçirildi.\n'
-        'API dokümantasyonu cuma gününe kadar tamamlanacak.\nYeni tasarım cuma demo.', 'İş',
-        const Duration(hours: 3)),
-    note('demo-3', 'Bilgisayar Ağları vizesi', 'OSI katmanları, TCP el sıkışması, alt ağ hesapları.\n'
-        'Çıkmış soruları çöz.', 'Okul', const Duration(days: 1, hours: 2)),
-    note('demo-4', '', 'Kitap önerisi: Rüzgârın Gölgesi\nAyşe tavsiye etti.', 'Kişisel',
-        const Duration(days: 6)),
+    note(
+      'demo-1',
+      'Market listesi',
+      'Süt\nYumurta\nTam buğday ekmek\nMuz\nKahve çekirdeği',
+      'Kişisel',
+      const Duration(days: 2),
+      edited: const Duration(minutes: 4),
+    ),
+    note(
+      'demo-2',
+      'Haftalık toplantı',
+      'Sprint hedefleri gözden geçirildi.\n'
+          'API dokümantasyonu cuma gününe kadar tamamlanacak.\nYeni tasarım cuma demo.',
+      'İş',
+      const Duration(hours: 3),
+    ),
+    note(
+      'demo-3',
+      'Bilgisayar Ağları vizesi',
+      'OSI katmanları, TCP el sıkışması, alt ağ hesapları.\n'
+          'Çıkmış soruları çöz.',
+      'Okul',
+      const Duration(days: 1, hours: 2),
+    ),
+    note('demo-4', '', 'Kitap önerisi: Rüzgârın Gölgesi\nAyşe tavsiye etti.', 'Kişisel', const Duration(days: 6)),
     note('demo-5', 'Hatırlatma', 'Fatura son ödeme günü 15’i.', 'Genel', const Duration(days: 40)),
   ];
 }

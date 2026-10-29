@@ -106,11 +106,14 @@ void main() {
   });
 
   testWidgets('category filter and search', (tester) async {
-    await _pumpApp(tester, notes: [
-      _note('a', 'Market', 'süt', 'Kişisel', 1),
-      _note('b', 'Sprint planı', 'iş takibi', 'İş', 2),
-      _note('c', 'Fikir', 'uygulama', 'Genel', 3),
-    ]);
+    await _pumpApp(
+      tester,
+      notes: [
+        _note('a', 'Market', 'süt', 'Kişisel', 1),
+        _note('b', 'Sprint planı', 'iş takibi', 'İş', 2),
+        _note('c', 'Fikir', 'uygulama', 'Genel', 3),
+      ],
+    );
 
     await tester.tap(find.byKey(const Key('filter-İş')));
     await tester.pumpAndSettle();

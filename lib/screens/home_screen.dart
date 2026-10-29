@@ -105,16 +105,17 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: InputDecoration(
           hintText: 'Notlarda ara',
           prefixIcon: const Icon(Icons.search),
-          suffixIcon: _search.text.isEmpty
-              ? null
-              : IconButton(
-                  tooltip: 'Aramayı temizle',
-                  icon: const Icon(Icons.close),
-                  onPressed: () {
-                    _search.clear();
-                    _controller.setQuery('');
-                  },
-                ),
+          suffixIcon:
+              _search.text.isEmpty
+                  ? null
+                  : IconButton(
+                    tooltip: 'Aramayı temizle',
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      _search.clear();
+                      _controller.setQuery('');
+                    },
+                  ),
         ),
       ),
     );
@@ -139,10 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(20, 12, 12, 4),
-        children: [
-          chip(null, 'Tümü'),
-          for (final category in _controller.categories) chip(category, category),
-        ],
+        children: [chip(null, 'Tümü'), for (final category in _controller.categories) chip(category, category)],
       ),
     );
   }

@@ -14,8 +14,8 @@ abstract interface class NoteStore {
 
 class MemoryNoteStore implements NoteStore {
   MemoryNoteStore({Iterable<Note> notes = const [], Iterable<String> categories = const []})
-      : _notes = {for (final note in notes) note.id: note},
-        _categories = [...categories];
+    : _notes = {for (final note in notes) note.id: note},
+      _categories = [...categories];
 
   final Map<String, Note> _notes;
   List<String> _categories;
