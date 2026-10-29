@@ -32,11 +32,9 @@ async function open(query, { theme = 'light', video = false } = {}) {
   await page.goto(`${base}/?theme=${theme}${query}`, { waitUntil: 'networkidle', timeout: 90_000 });
   await page.waitForSelector('flutter-view, flt-glass-pane', { timeout: 60_000 });
   await page.waitForTimeout(2500);
-  const placeholder = page.locator('flt-semantics-placeholder');
-  if (await placeholder.count()) {
-    await placeholder.click({ force: true });
-    await page.waitForTimeout(800);
-  }
+  // Flutter's "Enable accessibility" button sits off-screen; trigger it directly.
+  await page.evaluate(() => document.querySelector('flt-semantics-placeholder')?.click());
+  await page.waitForTimeout(800);
   return { context, page };
 }
 

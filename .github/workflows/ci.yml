@@ -91,15 +91,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install Playwright
+      - name: Install Playwright and ffmpeg
         run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
           npm install --no-save playwright@1.49.1
           npx playwright install --with-deps chromium
       - name: Take screenshots
         run: |
           python3 -m http.server 8080 -d build/web > /dev/null 2>&1 &
           sleep 2
-          node tool/screenshots.mjs http://localhost:8080 docs/screenshots
+          tool/ci_run.sh "screenshots" node tool/screenshots.mjs http://localhost:8080 docs/screenshots
       - name: Turn the recording into a GIF
         run: |
           video=$(ls docs/screenshots/_video/*.webm 2>/dev/null | head -1 || true)
