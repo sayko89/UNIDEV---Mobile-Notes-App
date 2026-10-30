@@ -62,12 +62,12 @@ p {{ font-weight: 500; font-size: 22px; line-height: 1.45; color: #4A565C; margi
 <div class="left">
   <div class="kicker"><i></i>UNIDEV · Mobile App Assignment · 2025</div>
   <h1>UNIDEV<br><span>Notlar.</span></h1>
-  <p>Not al, düzenle, kategorilere ayır, ara. Tek kod tabanıyla Android, iOS ve web’de çalışan bir Flutter uygulaması.</p>
-  <div class="tags"><b>Flutter · Dart 3</b><b>Hive</b><b>Material 3</b><b>35 test</b></div>
+  <p>Not al, kategorilere ayır, tarih ekle. Takvim, geri sayım ve telefon hatırlatmalarıyla; tek kod tabanından Android, iOS ve web.</p>
+  <div class="tags"><b>Flutter · Dart 3</b><b>Hive</b><b>Material 3</b><b>54 test</b></div>
 </div>
 {phone('01-home.png', 'p1')}
-{phone('03-editor.png', 'p2')}
-{phone('06-dark.png', 'p3')}
+{phone('09-calendar.png', 'p2')}
+{phone('10-upcoming.png', 'p3')}
 </body></html>"""
 
 
