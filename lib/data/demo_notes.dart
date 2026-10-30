@@ -30,7 +30,13 @@ List<Note> demoNotes(DateTime now) {
     );
   }
 
-  // Today's reminders sit a little before and after the current time.
+  // Today's reminders sit a little before and after the current time (but stay on today).
+  final endOfToday = DateTime(now.year, now.month, now.day, 23, 30);
+  DateTime todayIn(Duration offset) {
+    final t = now.add(offset);
+    return t.isAfter(endOfToday) ? endOfToday : DateTime(t.year, t.month, t.day, t.hour, t.minute < 30 ? 0 : 30);
+  }
+
   final laterToday =
       now.add(const Duration(hours: 2)).isBefore(today.add(const Duration(days: 1)))
           ? now.add(const Duration(hours: 2))
@@ -86,6 +92,23 @@ List<Note> demoNotes(DateTime now) {
       const Duration(days: 3),
       dueAt: at(-2, 14),
       done: true,
+    ),
+    note(
+      'demo-9',
+      'Sabah koşusu',
+      '5 km, sahil yolu',
+      'Kişisel',
+      const Duration(days: 1),
+      dueAt: DateTime(now.year, now.month, now.day, 7, 30),
+      done: true,
+    ),
+    note(
+      'demo-10',
+      'Elif ile kahve',
+      'Kampüs kafe — staj başvurularını konuşalım.',
+      'Kişisel',
+      const Duration(hours: 20),
+      dueAt: todayIn(const Duration(hours: 4)),
     ),
     note('demo-8', '', 'Kitap önerisi: Kürk Mantolu Madonna\nZeynep tavsiye etti.', 'Kişisel', const Duration(days: 6)),
   ];

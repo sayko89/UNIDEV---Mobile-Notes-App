@@ -68,7 +68,7 @@ async function longPress(page, name) {
   const box = await el.boundingBox();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  await page.waitForTimeout(900);
+  await page.waitForTimeout(1500);
   await page.mouse.up();
   await page.waitForTimeout(900);
 }
@@ -128,6 +128,28 @@ await step('filter', async () => {
   await context.close();
 });
 
+await step('editor with reminder', async () => {
+  const { context, page } = await open('&demo=1');
+  await tap(page, 'Bilgisayar Ağları vizesi');
+  await tap(page, 'Düzenle');
+  await shot(page, '08-reminder.png');
+  await context.close();
+});
+
+await step('calendar', async () => {
+  const { context, page } = await open('&demo=1');
+  await tap(page, 'Takvim');
+  await shot(page, '09-calendar.png');
+  await context.close();
+});
+
+await step('upcoming', async () => {
+  const { context, page } = await open('&demo=1');
+  await tap(page, 'Tümünü gör'); // opens the Yaklaşanlar tab
+  await shot(page, '10-upcoming.png');
+  await context.close();
+});
+
 await step('dark', async () => {
   const { context, page } = await open('&demo=1', { theme: 'dark' });
   await shot(page, '06-dark.png');
@@ -155,7 +177,11 @@ await step('flow video', async () => {
   await tap(page, 'Kaydet', 1400);
   await longPress(page, 'Kahve molası');
   await tap(page, 'Sil', 1400);
-  await tap(page, 'Geri al', 1600);
+  await tap(page, 'Geri al', 1400);
+  await tap(page, 'Takvim', 1800);
+  await tap(page, /^Notlar$/, 1200);
+  await tap(page, 'Tümünü gör', 1800);
+  await tap(page, /^Notlar$/, 1200);
   const video = page.video();
   await context.close();
   if (video) {
