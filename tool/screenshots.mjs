@@ -74,6 +74,9 @@ async function longPress(page, name) {
 }
 
 async function shot(page, file) {
+  // Move the pointer away so no tooltip or hover highlight is captured.
+  await page.mouse.move(2, 2);
+  await page.waitForTimeout(700);
   await page.screenshot({ path: `${out}/${file}` });
   note(`saved ${file}`);
 }
@@ -89,9 +92,6 @@ async function step(name, fn) {
 await step('home', async () => {
   const { context, page } = await open('&demo=1');
   await shot(page, '01-home.png');
-  const labels = await page.$$eval('flt-semantics', (nodes) =>
-    nodes.map((n) => n.getAttribute('aria-label') || n.textContent).filter(Boolean).slice(0, 40));
-  note(`semantics labels: ${JSON.stringify(labels)}`);
   await context.close();
 });
 
@@ -130,8 +130,11 @@ await step('filter', async () => {
 
 await step('editor with reminder', async () => {
   const { context, page } = await open('&demo=1');
-  await tap(page, 'Bilgisayar Ağları vizesi');
-  await tap(page, 'Düzenle');
+  await tap(page, 'Bilgisayar Ağları vizesi', 1200);
+  const labels = await page.$$eval('flt-semantics', (nodes) =>
+    nodes.map((n) => n.getAttribute('aria-label') || '').filter(Boolean).slice(0, 25));
+  note(`detail labels: ${JSON.stringify(labels)}`);
+  await tap(page, /^Düzenle$/, 1200);
   await shot(page, '08-reminder.png');
   await context.close();
 });
