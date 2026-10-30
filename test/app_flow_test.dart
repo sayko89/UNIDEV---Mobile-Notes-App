@@ -27,6 +27,10 @@ DateTime _dayFromToday(int days, int hour) {
 }
 
 Future<NotesController> _pumpApp(WidgetTester tester, {List<Note> notes = const []}) async {
+  // A phone-sized screen (iPhone 14: 390 × 844), so layouts are tested at a realistic size.
+  tester.view.physicalSize = const Size(1170, 2532);
+  tester.view.devicePixelRatio = 3;
+  addTearDown(tester.view.reset);
   final controller = NotesController(MemoryNoteStore(notes: notes));
   await tester.pumpWidget(NotesApp(controller: controller, themeMode: ThemeMode.light));
   await tester.pumpAndSettle();
