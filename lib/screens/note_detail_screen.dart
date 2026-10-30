@@ -4,7 +4,7 @@ import '../models/note.dart';
 import '../notes_controller.dart';
 import '../util/text.dart';
 import '../widgets/note_actions.dart';
-import '../widgets/note_card.dart';
+import '../widgets/note_bits.dart';
 
 /// Shows a whole note. Follows edits made from the editor, because it listens to the controller.
 class NoteDetailScreen extends StatefulWidget {
@@ -55,8 +55,14 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
               children: [
-                CategoryLabel(note.category),
-                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    CategoryBadge(note.category, size: 32),
+                    const SizedBox(width: 10),
+                    CategoryLabel(note.category),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 SelectableText(
                   note.displayTitle,
                   style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
@@ -68,6 +74,26 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
                       : 'Oluşturuldu ${formatFull(note.createdAt)}',
                   style: theme.textTheme.bodySmall?.copyWith(color: muted, height: 1.5),
                 ),
+                if (note.hasDue) ...[
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                      child: Row(
+                        children: [
+                          Expanded(child: DueLabel(note: note)),
+                          const SizedBox(width: 8),
+                          FilledButton.tonalIcon(
+                            key: const Key('detail-toggle-done'),
+                            onPressed: () => widget.controller.toggleDone(note),
+                            icon: Icon(note.done ? Icons.undo : Icons.check),
+                            label: Text(note.done ? 'Yeniden aç' : 'Tamamlandı'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
                 const Divider(height: 32),
                 if (note.content.isEmpty)
                   Text('Bu notun içeriği yok.', style: theme.textTheme.bodyLarge?.copyWith(color: muted))

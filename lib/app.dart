@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'notes_controller.dart';
-import 'screens/home_screen.dart';
+import 'screens/home_shell.dart';
 import 'theme.dart';
 
 class NotesApp extends StatelessWidget {
@@ -22,7 +22,7 @@ class NotesApp extends StatelessWidget {
       locale: const Locale('tr'),
       supportedLocales: const [Locale('tr')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      home: HomeScreen(controller: controller),
+      home: HomeShell(controller: controller),
     );
   }
 }

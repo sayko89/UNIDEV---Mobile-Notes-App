@@ -2,9 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:unidev_note_app/data/note_store.dart';
 import 'package:unidev_note_app/models/note.dart';
 import 'package:unidev_note_app/notes_controller.dart';
+import 'package:unidev_note_app/reminders/reminders.dart';
 
 /// A controller with a fake clock that moves one minute per call, and predictable ids.
-({NotesController controller, MemoryNoteStore store}) _setUp({List<Note> notes = const []}) {
+({NotesController controller, MemoryNoteStore store}) _setUp({
+  List<Note> notes = const [],
+  Reminders reminders = const NoReminders(),
+}) {
   final store = MemoryNoteStore(notes: notes);
   var time = DateTime(2026, 10, 29, 9);
   var id = 0;
@@ -12,6 +16,7 @@ import 'package:unidev_note_app/notes_controller.dart';
     store,
     clock: () => time = time.add(const Duration(minutes: 1)),
     idGenerator: () => 'id${++id}',
+    reminders: reminders,
   );
   return (controller: controller, store: store);
 }
@@ -151,4 +156,104 @@ void main() {
     await controller.delete(note);
     expect(calls, 3);
   });
+
+  group('reminders', () {
+    // The fake clock starts at 2026-10-29 09:00 and moves one minute per call.
+    final now = DateTime(2026, 10, 29, 12);
+
+    Future<NotesController> withDates() async {
+      final (:controller, store: _) = _setUp();
+      await controller.create(title: 'Dün', content: '', category: 'Genel', dueAt: DateTime(2026, 10, 28, 18));
+      await controller.create(title: 'Bugün', content: '', category: 'İş', dueAt: DateTime(2026, 10, 29, 15));
+      await controller.create(title: 'Yarın', content: '', category: 'Okul', dueAt: DateTime(2026, 10, 30, 9));
+      await controller.create(title: 'Gelecek ay', content: '', category: 'Okul', dueAt: DateTime(2026, 11, 20, 9));
+      await controller.create(title: 'Tarihsiz', content: '', category: 'Genel');
+      return controller;
+    }
+
+    test('overdue, upcoming and per-day lists', () async {
+      final controller = await withDates();
+      expect(controller.overdue(now: now).map((n) => n.title), ['Dün']);
+      expect(controller.upcoming(now: now).map((n) => n.title), ['Bugün', 'Yarın', 'Gelecek ay']);
+      expect(controller.notesOn(DateTime(2026, 10, 30)).map((n) => n.title), ['Yarın']);
+      expect(controller.attentionCount(now: now), 2); // overdue + later today
+    });
+
+    test('ticking a note off removes it from the waiting lists', () async {
+      final controller = await withDates();
+      final overdue = controller.overdue(now: now).single;
+      final done = await controller.toggleDone(overdue);
+      expect(done.done, isTrue);
+      expect(controller.overdue(now: now), isEmpty);
+      expect(controller.completed().map((n) => n.title), ['Dün']);
+      expect((await controller.toggleDone(done)).done, isFalse);
+    });
+
+    test('update keeps the reminder unless a new one is given; moving it un-ticks the note', () async {
+      final (:controller, store: _) = _setUp();
+      final due = DateTime(2026, 11, 1, 10);
+      var note = await controller.create(title: 'Sınav', content: '', category: 'Okul', dueAt: due);
+      note = await controller.toggleDone(note);
+
+      note = await controller.update(note, title: 'Sınav!', content: '', category: 'Okul');
+      expect(note.dueAt, due);
+      expect(note.done, isTrue);
+
+      note = await controller.update(note, title: 'Sınav!', content: '', category: 'Okul', dueAt: DateTime(2026, 11, 2, 10));
+      expect(note.done, isFalse);
+
+      note = await controller.update(note, title: 'Sınav!', content: '', category: 'Okul', dueAt: null);
+      expect(note.dueAt, isNull);
+    });
+
+    test('reminders are scheduled and cancelled as notes change', () async {
+      final reminders = _FakeReminders();
+      final (:controller, store: _) = _setUp(reminders: reminders);
+      final future = DateTime(2030, 1, 1, 9);
+
+      final note = await controller.create(title: 'A', content: '', category: 'Genel', dueAt: future);
+      expect(reminders.scheduled, {note.id: future});
+
+      final done = await controller.toggleDone(note);
+      expect(reminders.scheduled, isEmpty);
+
+      await controller.toggleDone(done);
+      expect(reminders.scheduled, {note.id: future});
+
+      await controller.delete(note);
+      expect(reminders.scheduled, isEmpty);
+
+      await controller.restore(note);
+      expect(reminders.scheduled.keys, [note.id]);
+    });
+  });
+
+  test('notification ids are stable and positive', () {
+    expect(notificationIdFor('abc'), notificationIdFor('abc'));
+    expect(notificationIdFor('abc'), isNot(notificationIdFor('abd')));
+    expect(notificationIdFor('m2x9k1q-1h3j9z'), greaterThanOrEqualTo(0));
+  });
+}
+
+/// Records what would be scheduled, using the same rule as the real implementation.
+class _FakeReminders implements Reminders {
+  final scheduled = <String, DateTime>{};
+
+  @override
+  bool get isSupported => true;
+
+  @override
+  Future<bool> requestPermission() async => true;
+
+  @override
+  Future<void> sync(Note note, {required DateTime now}) async {
+    if (shouldNotify(note, now)) {
+      scheduled[note.id] = note.dueAt!;
+    } else {
+      scheduled.remove(note.id);
+    }
+  }
+
+  @override
+  Future<void> cancel(String noteId) async => scheduled.remove(noteId);
 }

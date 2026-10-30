@@ -30,6 +30,27 @@ class LegacyNoteAdapter extends TypeAdapter<LegacyNote> {
   }
 }
 
+/// The version 2 format (October 2026, before reminders), to check it is still read.
+class V2NoteAdapter extends TypeAdapter<Note> {
+  @override
+  final int typeId = 0;
+
+  @override
+  Note read(BinaryReader reader) => throw UnimplementedError();
+
+  @override
+  void write(BinaryWriter writer, Note obj) {
+    writer
+      ..writeString('\u0000note:v2')
+      ..writeString(obj.id)
+      ..writeString(obj.title)
+      ..writeString(obj.content)
+      ..writeString(obj.category)
+      ..writeInt(obj.createdAt.millisecondsSinceEpoch)
+      ..writeInt(obj.updatedAt.millisecondsSinceEpoch);
+  }
+}
+
 void main() {
   late Directory dir;
 
@@ -53,17 +74,28 @@ void main() {
       category: 'İş',
       createdAt: DateTime(2026, 10, 29, 9, 15),
       updatedAt: DateTime(2026, 10, 29, 10, 45),
+      dueAt: DateTime(2026, 11, 2, 14, 30),
+      done: true,
+    );
+    final undated = Note(
+      id: 'def',
+      title: 'Tarihsiz',
+      content: '',
+      category: 'Genel',
+      createdAt: DateTime(2026, 10, 29),
+      updatedAt: DateTime(2026, 10, 29),
     );
     await store.putNote(note);
+    await store.putNote(undated);
     await store.putCategories(['Genel', 'İş', 'Okul']);
     await Hive.close();
 
     store = await HiveNoteStore.open();
-    expect(store.loadNotes(), [note]);
+    expect(store.loadNotes()..sort((a, b) => a.id.compareTo(b.id)), [note, undated]);
     expect(store.loadCategories(), ['Genel', 'İş', 'Okul']);
 
     await store.deleteNote('abc');
-    expect(store.loadNotes(), isEmpty);
+    expect(store.loadNotes(), [undated]);
   });
 
   test('notes saved by version 1 are read and given ids', () async {
@@ -90,5 +122,26 @@ void main() {
     await Hive.close();
     final reopened = await HiveNoteStore.open();
     expect(reopened.loadNotes().firstWhere((n) => n.id == edited.id).content, 'Ekmek, süt');
+  });
+
+  test('notes saved by version 2 are read, without a reminder', () async {
+    Hive.registerAdapter(V2NoteAdapter(), override: true);
+    final box = await Hive.openBox<Note>(HiveNoteStore.notesBoxName);
+    final v2 = Note(
+      id: 'v2',
+      title: 'Ekim notu',
+      content: 'içerik',
+      category: 'İş',
+      createdAt: DateTime(2026, 10, 29, 9),
+      updatedAt: DateTime(2026, 10, 29, 10),
+    );
+    await box.put('v2', v2);
+    await Hive.close();
+
+    Hive.registerAdapter(NoteAdapter(), override: true);
+    final store = await HiveNoteStore.open();
+    expect(store.loadNotes(), [v2]);
+    expect(store.loadNotes().single.dueAt, isNull);
+    expect(store.loadNotes().single.done, isFalse);
   });
 }

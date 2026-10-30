@@ -63,13 +63,18 @@ class HiveNoteStore implements NoteStore {
 
 /// Binary format of a note in Hive.
 ///
-/// Version 1 (June 2025) wrote three strings: title, content, category.
-/// Version 2 starts with a marker string that a v1 title can't realistically be, followed by
-/// id, title, content, category and the two timestamps. Reading the first string tells the
-/// two formats apart, so old notes keep working without a separate migration step.
+/// - Version 1 (June 2025) wrote three strings: title, content, category.
+/// - Version 2 starts with a marker string that a v1 title can't realistically be, followed by
+///   id, title, content, category and the two timestamps.
+/// - Version 3 (current) has its own marker and adds the reminder date and the "done" flag.
+///
+/// Reading the first string tells the formats apart, so older notes keep working without a
+/// separate migration step.
 class NoteAdapter extends TypeAdapter<Note> {
   static const id = 0; // same type id as version 1
   static const _v2Marker = '\u0000note:v2';
+  static const _v3Marker = '\u0000note:v3';
+  static const _noDue = -1;
 
   @override
   int get typeId => id;
@@ -77,32 +82,49 @@ class NoteAdapter extends TypeAdapter<Note> {
   @override
   Note read(BinaryReader reader) {
     final first = reader.readString();
-    if (first != _v2Marker) {
+    if (first != _v2Marker && first != _v3Marker) {
       // Version 1 note: no id (added by HiveNoteStore) and no dates.
       final content = reader.readString();
       final category = reader.readString();
       final now = DateTime.now();
       return Note(id: '', title: first, content: content, category: category, createdAt: now, updatedAt: now);
     }
+    final id = reader.readString();
+    final title = reader.readString();
+    final content = reader.readString();
+    final category = reader.readString();
+    final createdAt = DateTime.fromMillisecondsSinceEpoch(reader.readInt());
+    final updatedAt = DateTime.fromMillisecondsSinceEpoch(reader.readInt());
+    DateTime? dueAt;
+    var done = false;
+    if (first == _v3Marker) {
+      final due = reader.readInt();
+      dueAt = due == _noDue ? null : DateTime.fromMillisecondsSinceEpoch(due);
+      done = reader.readBool();
+    }
     return Note(
-      id: reader.readString(),
-      title: reader.readString(),
-      content: reader.readString(),
-      category: reader.readString(),
-      createdAt: DateTime.fromMillisecondsSinceEpoch(reader.readInt()),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(reader.readInt()),
+      id: id,
+      title: title,
+      content: content,
+      category: category,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      dueAt: dueAt,
+      done: done,
     );
   }
 
   @override
   void write(BinaryWriter writer, Note obj) {
     writer
-      ..writeString(_v2Marker)
+      ..writeString(_v3Marker)
       ..writeString(obj.id)
       ..writeString(obj.title)
       ..writeString(obj.content)
       ..writeString(obj.category)
       ..writeInt(obj.createdAt.millisecondsSinceEpoch)
-      ..writeInt(obj.updatedAt.millisecondsSinceEpoch);
+      ..writeInt(obj.updatedAt.millisecondsSinceEpoch)
+      ..writeInt(obj.dueAt?.millisecondsSinceEpoch ?? _noDue)
+      ..writeBool(obj.done);
   }
 }

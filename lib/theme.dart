@@ -55,6 +55,15 @@ ThemeData buildTheme(Brightness brightness) {
       showCheckmark: false,
     ),
     bottomSheetTheme: BottomSheetThemeData(backgroundColor: card, showDragHandle: true),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: card,
+      elevation: 0,
+      height: 68,
+      indicatorColor: scheme.primaryContainer,
+      labelTextStyle: WidgetStatePropertyAll(
+        TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: scheme.onSurfaceVariant),
+      ),
+    ),
     snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
   );
 }

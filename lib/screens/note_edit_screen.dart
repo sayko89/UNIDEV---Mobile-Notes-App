@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../models/category_style.dart';
 import '../models/note.dart';
 import '../notes_controller.dart';
+import '../util/text.dart';
 
 /// Add a new note (when [note] is null) or edit an existing one.
 class NoteEditScreen extends StatefulWidget {
-  const NoteEditScreen({super.key, required this.controller, this.note});
+  const NoteEditScreen({super.key, required this.controller, this.note, this.initialDue});
 
   final NotesController controller;
   final Note? note;
+
+  /// For a new note: start with this reminder already set.
+  final DateTime? initialDue;
 
   @override
   State<NoteEditScreen> createState() => _NoteEditScreenState();
@@ -19,6 +24,8 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
   late final TextEditingController _content;
   late final String _initialCategory;
   late String _category;
+  late final DateTime? _initialDue;
+  DateTime? _due;
   String? _error;
   bool _closing = false;
 
@@ -33,6 +40,8 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
     // A new note starts in the category that is being filtered, if any.
     _initialCategory = widget.note?.category ?? _controller.filter ?? _controller.categories.first;
     _category = _initialCategory;
+    _initialDue = widget.note?.dueAt ?? widget.initialDue;
+    _due = _initialDue;
   }
 
   @override
@@ -45,7 +54,8 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
   bool get _hasChanges =>
       _title.text.trim() != (widget.note?.title ?? '') ||
       _content.text.trim() != (widget.note?.content ?? '') ||
-      _category != _initialCategory;
+      _category != _initialCategory ||
+      _due != _initialDue;
 
   Future<void> _save() async {
     if (_title.text.trim().isEmpty && _content.text.trim().isEmpty) {
@@ -54,9 +64,9 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
     }
     final note = widget.note;
     if (note == null) {
-      await _controller.create(title: _title.text, content: _content.text, category: _category);
+      await _controller.create(title: _title.text, content: _content.text, category: _category, dueAt: _due);
     } else {
-      await _controller.update(note, title: _title.text, content: _content.text, category: _category);
+      await _controller.update(note, title: _title.text, content: _content.text, category: _category, dueAt: _due);
     }
     _close();
   }
@@ -88,6 +98,79 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
     if (name == null || name.trim().isEmpty) return;
     final added = await _controller.addCategory(name);
     if (mounted) setState(() => _category = added);
+  }
+
+  /// Date picker, then time picker. Cancelling the time keeps the date at 09:00.
+  Future<void> _pickDue() async {
+    final now = DateTime.now();
+    final current = _due ?? DateTime(now.year, now.month, now.day, 9);
+    var first = DateTime(now.year - 1);
+    if (current.isBefore(first)) first = dateOnly(current);
+    final date = await showDatePicker(
+      context: context,
+      initialDate: current,
+      firstDate: first,
+      lastDate: DateTime(now.year + 5, 12, 31),
+      helpText: 'Hatırlatma tarihi',
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(current),
+      helpText: 'Hatırlatma saati',
+    );
+    if (!mounted) return;
+    final t = time ?? const TimeOfDay(hour: 9, minute: 0);
+    setState(() => _due = DateTime(date.year, date.month, date.day, t.hour, t.minute));
+    // Ask for notification permission when it first matters, not at app start.
+    if (_controller.remindersSupported) await _controller.requestReminderPermission();
+  }
+
+  Widget _reminderSection(ThemeData theme) {
+    final due = _due;
+    if (due == null) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: OutlinedButton.icon(
+          key: const Key('add-reminder'),
+          onPressed: _pickDue,
+          icon: const Icon(Icons.alarm_add_outlined),
+          label: const Text('Tarih ve saat ekle'),
+        ),
+      );
+    }
+    final countdown = formatCountdown(due);
+    final overdue = countdown == 'Gecikti';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Card(
+          child: ListTile(
+            key: const Key('reminder-tile'),
+            onTap: _pickDue,
+            leading: Icon(Icons.alarm, color: categoryStyle(_category).color),
+            title: Text(formatDue(due), style: const TextStyle(fontWeight: FontWeight.w600)),
+            subtitle: Text(
+              overdue ? 'Bu zaman geçti' : countdown,
+              style: TextStyle(color: overdue ? theme.colorScheme.error : null),
+            ),
+            trailing: IconButton(
+              tooltip: 'Hatırlatmayı kaldır',
+              icon: const Icon(Icons.close),
+              onPressed: () => setState(() => _due = null),
+            ),
+          ),
+        ),
+        if (!_controller.remindersSupported)
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 4),
+            child: Text(
+              'Bu sürümde telefon bildirimi gönderilmez; hatırlatma uygulamada görünür.',
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+          ),
+      ],
+    );
   }
 
   @override
@@ -140,6 +223,7 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
                   for (final category in _controller.categories)
                     ChoiceChip(
                       key: Key('category-$category'),
+                      avatar: Icon(categoryStyle(category).icon, size: 16, color: categoryStyle(category).color),
                       label: Text(category),
                       selected: _category == category,
                       onSelected: (_) => setState(() => _category = category),
@@ -152,6 +236,9 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 20),
+              label('Hatırlatma'),
+              _reminderSection(theme),
               if (_error != null) ...[
                 const SizedBox(height: 16),
                 Text(_error!, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error)),

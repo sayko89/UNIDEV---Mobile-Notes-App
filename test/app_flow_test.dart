@@ -5,9 +5,25 @@ import 'package:unidev_note_app/data/note_store.dart';
 import 'package:unidev_note_app/models/note.dart';
 import 'package:unidev_note_app/notes_controller.dart';
 
-Note _note(String id, String title, String content, String category, int minutesAgo) {
+Note _note(String id, String title, String content, String category, int minutesAgo, {DateTime? dueAt}) {
   final time = DateTime.now().subtract(Duration(minutes: minutesAgo));
-  return Note(id: id, title: title, content: content, category: category, createdAt: time, updatedAt: time);
+  return Note(
+    id: id,
+    title: title,
+    content: content,
+    category: category,
+    createdAt: time,
+    updatedAt: time,
+    dueAt: dueAt,
+  );
+}
+
+/// A tab in the bottom navigation bar.
+Finder _tab(String label) => find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
+
+DateTime _dayFromToday(int days, int hour) {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day + days, hour);
 }
 
 Future<NotesController> _pumpApp(WidgetTester tester, {List<Note> notes = const []}) async {
@@ -206,5 +222,106 @@ void main() {
     await tester.pumpAndSettle();
     final context = tester.element(find.text('Gece notu'));
     expect(Theme.of(context).brightness, Brightness.dark);
+  });
+
+  group('reminders', () {
+    testWidgets('a card shows the countdown, and the round check ticks the note off', (tester) async {
+      final controller = await _pumpApp(
+        tester,
+        notes: [
+          _note('late', 'Kitabı iade et', '', 'Okul', 60, dueAt: _dayFromToday(-1, 17)),
+          _note('soon', 'Sınav', '', 'Okul', 60, dueAt: _dayFromToday(3, 10)),
+        ],
+      );
+
+      expect(find.byKey(const Key('upcoming-strip')), findsOneWidget);
+      expect(find.textContaining('Gecikti'), findsWidgets);
+      expect(find.textContaining('3 gün kaldı'), findsWidgets);
+
+      final card = find.byKey(const ValueKey('note-late'));
+      await tester.tap(find.descendant(of: card, matching: find.byTooltip('Tamamlandı olarak işaretle')));
+      await tester.pumpAndSettle();
+      expect(controller.noteById('late')!.done, isTrue);
+      expect(controller.overdue(), isEmpty);
+    });
+
+    testWidgets('calendar: the selected day lists its notes on the timeline', (tester) async {
+      final tomorrow = _dayFromToday(1, 10);
+      await _pumpApp(tester, notes: [_note('t', 'Diş hekimi', '', 'Kişisel', 60, dueAt: tomorrow)]);
+
+      await tester.tap(_tab('Takvim'));
+      await tester.pumpAndSettle();
+      expect(find.text('Bu gün için hatırlatma yok'), findsOneWidget);
+
+      if (tomorrow.month != DateTime.now().month) {
+        await tester.tap(find.byTooltip('Sonraki ay'));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.byKey(Key('day-${tomorrow.year}-${tomorrow.month}-${tomorrow.day}')));
+      await tester.pumpAndSettle();
+      expect(find.text('Diş hekimi'), findsOneWidget);
+      expect(find.text('10:00'), findsOneWidget);
+    });
+
+    testWidgets('calendar: "Bu güne not ekle" starts a note with a reminder on that day', (tester) async {
+      final controller = await _pumpApp(tester);
+      await tester.tap(_tab('Takvim'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('add-note-on-day')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('reminder-tile')), findsOneWidget);
+      await tester.enterText(find.byKey(const Key('title-field')), 'Spor salonu');
+      await tester.ensureVisible(find.byKey(const Key('save-note')));
+      await tester.tap(find.byKey(const Key('save-note')));
+      await tester.pumpAndSettle();
+
+      final note = controller.notes.single;
+      expect(note.dueAt, _dayFromToday(0, 9));
+      expect(find.text('Spor salonu'), findsOneWidget); // on today's timeline
+    });
+
+    testWidgets('upcoming tab groups reminders', (tester) async {
+      await _pumpApp(
+        tester,
+        notes: [
+          _note('a', 'Gecikmiş iş', '', 'İş', 60, dueAt: _dayFromToday(-2, 9)),
+          _note('b', 'Yarınki toplantı', '', 'İş', 60, dueAt: _dayFromToday(1, 11)),
+          _note('c', 'Tatil', '', 'Kişisel', 60, dueAt: _dayFromToday(20, 8)),
+          _note('d', 'Tarihsiz not', '', 'Genel', 60),
+        ],
+      );
+      await tester.tap(_tab('Yaklaşanlar'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('group-Gecikenler')), findsOneWidget);
+      expect(find.byKey(const Key('group-Yarın')), findsOneWidget);
+      expect(find.byKey(const Key('group-Daha sonra')), findsOneWidget);
+      expect(find.text('Yarınki toplantı'), findsOneWidget);
+      expect(find.text('Tarihsiz not'), findsNothing);
+      expect(find.text('20 gün kaldı'), findsOneWidget);
+    });
+
+    testWidgets('a reminder can be removed in the editor', (tester) async {
+      final controller = await _pumpApp(
+        tester,
+        notes: [_note('r', 'Hatırlatmalı', 'x', 'Genel', 60, dueAt: _dayFromToday(5, 12))],
+      );
+      await tester.tap(find.byKey(const ValueKey('note-r')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('detail-toggle-done')), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Düzenle'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byTooltip('Hatırlatmayı kaldır'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Hatırlatmayı kaldır'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('add-reminder')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('save-note')));
+      await tester.pumpAndSettle();
+
+      expect(controller.noteById('r')!.dueAt, isNull);
+    });
   });
 }

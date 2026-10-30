@@ -5,10 +5,14 @@ import '../notes_controller.dart';
 import '../screens/note_detail_screen.dart';
 import '../screens/note_edit_screen.dart';
 
-Future<void> openNoteEditor(BuildContext context, NotesController controller, {Note? note}) {
-  return Navigator.of(
-    context,
-  ).push(MaterialPageRoute<void>(builder: (_) => NoteEditScreen(controller: controller, note: note)));
+/// Opens the editor for [note], or for a new note — optionally with a reminder already set
+/// to [initialDue] (used by "Bu güne not ekle" in the calendar).
+Future<void> openNoteEditor(BuildContext context, NotesController controller, {Note? note, DateTime? initialDue}) {
+  return Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => NoteEditScreen(controller: controller, note: note, initialDue: initialDue),
+    ),
+  );
 }
 
 Future<void> openNoteDetail(BuildContext context, NotesController controller, Note note) {
