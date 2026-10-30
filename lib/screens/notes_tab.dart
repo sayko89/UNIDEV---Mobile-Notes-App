@@ -237,10 +237,14 @@ class _NotesTabState extends State<NotesTab> {
 
     return SizedBox(
       height: 60,
-      child: ListView(
+      // A Row in a scroll view (rather than a lazy ListView) builds every chip, so they are all
+      // reachable by screen readers and keyboard focus. There are only a handful.
+      child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(20, 12, 12, 4),
-        children: [chip(null, 'Tümü'), for (final category in _controller.categories) chip(category, category)],
+        child: Row(
+          children: [chip(null, 'Tümü'), for (final category in _controller.categories) chip(category, category)],
+        ),
       ),
     );
   }
