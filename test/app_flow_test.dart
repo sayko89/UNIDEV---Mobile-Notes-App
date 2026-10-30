@@ -18,6 +18,14 @@ Note _note(String id, String title, String content, String category, int minutes
   );
 }
 
+/// Scrolls [finder] into view first — on a phone-sized screen, chips and form fields can be
+/// off-screen — then taps it.
+Future<void> _tap(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+}
+
 /// A tab in the bottom navigation bar.
 Finder _tab(String label) => find.descendant(of: find.byType(NavigationBar), matching: find.text(label));
 
@@ -48,14 +56,14 @@ void main() {
     final controller = await _pumpApp(tester);
     expect(find.text('Henüz not yok'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Yeni not'));
+    await _tap(tester, find.byTooltip('Yeni not'));
     await tester.pumpAndSettle();
     expect(find.text('Yeni not'), findsOneWidget); // editor title
 
     await tester.enterText(find.byKey(const Key('title-field')), 'Market listesi');
     await tester.enterText(find.byKey(const Key('content-field')), 'Süt\nYumurta');
-    await tester.tap(find.byKey(const Key('category-Kişisel')));
-    await tester.tap(find.byKey(const Key('save-note')));
+    await _tap(tester, find.byKey(const Key('category-Kişisel')));
+    await _tap(tester, find.byKey(const Key('save-note')));
     await tester.pumpAndSettle();
 
     expect(find.text('Market listesi'), findsOneWidget);
@@ -65,10 +73,10 @@ void main() {
 
   testWidgets('an empty note is not saved', (tester) async {
     final controller = await _pumpApp(tester);
-    await tester.tap(find.byTooltip('Yeni not'));
+    await _tap(tester, find.byTooltip('Yeni not'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('title-field')), '   ');
-    await tester.tap(find.byKey(const Key('save-note')));
+    await _tap(tester, find.byKey(const Key('save-note')));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Boş not kaydedilemez'), findsOneWidget);
@@ -78,15 +86,15 @@ void main() {
   testWidgets('open a note, edit it, and see the change on the detail page', (tester) async {
     await _pumpApp(tester, notes: [_note('a', 'Toplantı', 'Gündem: bütçe', 'İş', 30)]);
 
-    await tester.tap(find.text('Toplantı'));
+    await _tap(tester, find.text('Toplantı'));
     await tester.pumpAndSettle();
     expect(find.text('Gündem: bütçe'), findsOneWidget);
     expect(find.textContaining('Oluşturuldu'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Düzenle'));
+    await _tap(tester, find.byTooltip('Düzenle'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('content-field')), 'Gündem: bütçe ve takvim');
-    await tester.tap(find.byKey(const Key('save-note')));
+    await _tap(tester, find.byKey(const Key('save-note')));
     await tester.pumpAndSettle();
 
     expect(find.text('Gündem: bütçe ve takvim'), findsOneWidget); // back on the detail page
@@ -99,13 +107,13 @@ void main() {
     await tester.longPress(find.text('Silinecek not'));
     await tester.pumpAndSettle();
     expect(find.text('Düzenle'), findsOneWidget);
-    await tester.tap(find.text('Sil'));
+    await _tap(tester, find.text('Sil'));
     await tester.pumpAndSettle();
 
     expect(controller.notes, isEmpty);
     expect(find.text('"Silinecek not" silindi'), findsOneWidget);
 
-    await tester.tap(find.text('Geri al'));
+    await _tap(tester, find.text('Geri al'));
     await tester.pumpAndSettle();
     expect(find.text('Silinecek not'), findsOneWidget);
     expect(controller.notes, hasLength(1));
@@ -114,9 +122,9 @@ void main() {
 
   testWidgets('delete from the detail page returns to the list with undo', (tester) async {
     final controller = await _pumpApp(tester, notes: [_note('a', 'Detaydan sil', 'x', 'Genel', 5)]);
-    await tester.tap(find.text('Detaydan sil'));
+    await _tap(tester, find.text('Detaydan sil'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Sil'));
+    await _tap(tester, find.byTooltip('Sil'));
     await tester.pumpAndSettle();
 
     expect(find.text('Notlarım'), findsOneWidget);
@@ -135,12 +143,12 @@ void main() {
       ],
     );
 
-    await tester.tap(find.byKey(const Key('filter-İş')));
+    await _tap(tester, find.byKey(const Key('filter-İş')));
     await tester.pumpAndSettle();
     expect(find.text('Sprint planı'), findsOneWidget);
     expect(find.text('Market'), findsNothing);
 
-    await tester.tap(find.byKey(const Key('filter-all')));
+    await _tap(tester, find.byKey(const Key('filter-all')));
     await tester.enterText(find.byKey(const Key('search-field')), 'SÜT');
     await tester.pumpAndSettle();
     expect(find.text('Market'), findsOneWidget);
@@ -149,7 +157,7 @@ void main() {
     await tester.enterText(find.byKey(const Key('search-field')), 'olmayan kelime');
     await tester.pumpAndSettle();
     expect(find.text('Eşleşen not yok'), findsOneWidget);
-    await tester.tap(find.text('Filtreleri temizle'));
+    await _tap(tester, find.text('Filtreleri temizle'));
     await tester.pumpAndSettle();
     expect(find.text('Market'), findsOneWidget);
     expect(find.text('Fikir'), findsOneWidget);
@@ -157,7 +165,7 @@ void main() {
 
   testWidgets('leaving the editor with unsaved changes asks first', (tester) async {
     final controller = await _pumpApp(tester);
-    await tester.tap(find.byTooltip('Yeni not'));
+    await _tap(tester, find.byTooltip('Yeni not'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('title-field')), 'Yarım kalan');
     await tester.pump();
@@ -166,13 +174,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Değişiklikler kaydedilmedi'), findsOneWidget);
 
-    await tester.tap(find.text('Düzenlemeye dön'));
+    await _tap(tester, find.text('Düzenlemeye dön'));
     await tester.pumpAndSettle();
     expect(find.text('Yarım kalan'), findsOneWidget); // still editing
 
     await tester.binding.handlePopRoute(); // Android back button / gesture
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Kaydetmeden çık'));
+    await _tap(tester, find.text('Kaydetmeden çık'));
     await tester.pumpAndSettle();
     expect(find.text('Henüz not yok'), findsOneWidget);
     expect(controller.notes, isEmpty);
@@ -180,7 +188,7 @@ void main() {
 
   testWidgets('leaving the editor without changes does not ask', (tester) async {
     await _pumpApp(tester);
-    await tester.tap(find.byTooltip('Yeni not'));
+    await _tap(tester, find.byTooltip('Yeni not'));
     await tester.pumpAndSettle();
     await tester.binding.handlePopRoute(); // Android back button / gesture
     await tester.pumpAndSettle();
@@ -190,17 +198,17 @@ void main() {
 
   testWidgets('add a new category from the editor', (tester) async {
     final controller = await _pumpApp(tester);
-    await tester.tap(find.byTooltip('Yeni not'));
+    await _tap(tester, find.byTooltip('Yeni not'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('title-field')), 'Vize');
 
-    await tester.tap(find.byKey(const Key('new-category')));
+    await _tap(tester, find.byKey(const Key('new-category')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('category-name-field')), 'Okul');
-    await tester.tap(find.byKey(const Key('category-add')));
+    await _tap(tester, find.byKey(const Key('category-add')));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('save-note')));
+    await _tap(tester, find.byKey(const Key('save-note')));
     await tester.pumpAndSettle();
 
     expect(controller.categories, contains('Okul'));
@@ -210,12 +218,12 @@ void main() {
 
   testWidgets('a new note starts in the category being filtered', (tester) async {
     final controller = await _pumpApp(tester);
-    await tester.tap(find.byKey(const Key('filter-İş')));
+    await _tap(tester, find.byKey(const Key('filter-İş')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Yeni not'));
+    await _tap(tester, find.byTooltip('Yeni not'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('title-field')), 'Rapor');
-    await tester.tap(find.byKey(const Key('save-note')));
+    await _tap(tester, find.byKey(const Key('save-note')));
     await tester.pumpAndSettle();
     expect(controller.notes.single.category, 'İş');
   });
@@ -243,7 +251,7 @@ void main() {
       expect(find.textContaining('3 gün kaldı'), findsWidgets);
 
       final card = find.byKey(const ValueKey('note-late'));
-      await tester.tap(find.descendant(of: card, matching: find.byTooltip('Tamamlandı olarak işaretle')));
+      await _tap(tester, find.descendant(of: card, matching: find.byTooltip('Tamamlandı olarak işaretle')));
       await tester.pumpAndSettle();
       expect(controller.noteById('late')!.done, isTrue);
       expect(controller.overdue(), isEmpty);
@@ -253,15 +261,15 @@ void main() {
       final tomorrow = _dayFromToday(1, 10);
       await _pumpApp(tester, notes: [_note('t', 'Diş hekimi', '', 'Kişisel', 60, dueAt: tomorrow)]);
 
-      await tester.tap(_tab('Takvim'));
+      await _tap(tester, _tab('Takvim'));
       await tester.pumpAndSettle();
       expect(find.text('Bu gün için hatırlatma yok'), findsOneWidget);
 
       if (tomorrow.month != DateTime.now().month) {
-        await tester.tap(find.byTooltip('Sonraki ay'));
+        await _tap(tester, find.byTooltip('Sonraki ay'));
         await tester.pumpAndSettle();
       }
-      await tester.tap(find.byKey(Key('day-${tomorrow.year}-${tomorrow.month}-${tomorrow.day}')));
+      await _tap(tester, find.byKey(Key('day-${tomorrow.year}-${tomorrow.month}-${tomorrow.day}')));
       await tester.pumpAndSettle();
       expect(find.text('Diş hekimi'), findsOneWidget);
       expect(find.text('10:00'), findsOneWidget);
@@ -269,15 +277,15 @@ void main() {
 
     testWidgets('calendar: "Bu güne not ekle" starts a note with a reminder on that day', (tester) async {
       final controller = await _pumpApp(tester);
-      await tester.tap(_tab('Takvim'));
+      await _tap(tester, _tab('Takvim'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('add-note-on-day')));
+      await _tap(tester, find.byKey(const Key('add-note-on-day')));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('reminder-tile')), findsOneWidget);
       await tester.enterText(find.byKey(const Key('title-field')), 'Spor salonu');
       await tester.ensureVisible(find.byKey(const Key('save-note')));
-      await tester.tap(find.byKey(const Key('save-note')));
+      await _tap(tester, find.byKey(const Key('save-note')));
       await tester.pumpAndSettle();
 
       final note = controller.notes.single;
@@ -295,7 +303,7 @@ void main() {
           _note('d', 'Tarihsiz not', '', 'Genel', 60),
         ],
       );
-      await tester.tap(_tab('Yaklaşanlar'));
+      await _tap(tester, _tab('Yaklaşanlar'));
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('group-Gecikenler')), findsOneWidget);
@@ -311,18 +319,18 @@ void main() {
         tester,
         notes: [_note('r', 'Hatırlatmalı', 'x', 'Genel', 60, dueAt: _dayFromToday(5, 12))],
       );
-      await tester.tap(find.byKey(const ValueKey('note-r')));
+      await _tap(tester, find.byKey(const ValueKey('note-r')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('detail-toggle-done')), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Düzenle'));
+      await _tap(tester, find.byTooltip('Düzenle'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.byTooltip('Hatırlatmayı kaldır'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Hatırlatmayı kaldır'));
+      await _tap(tester, find.byTooltip('Hatırlatmayı kaldır'));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('add-reminder')), findsOneWidget);
-      await tester.tap(find.byKey(const Key('save-note')));
+      await _tap(tester, find.byKey(const Key('save-note')));
       await tester.pumpAndSettle();
 
       expect(controller.noteById('r')!.dueAt, isNull);
