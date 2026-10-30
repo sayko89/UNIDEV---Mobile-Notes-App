@@ -249,7 +249,16 @@ class _NoteEditScreenState extends State<NoteEditScreen> {
         bottomNavigationBar: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-            child: FilledButton(key: const Key('save-note'), onPressed: _save, child: const Text('Kaydet')),
+            child: FilledButton(
+              key: const Key('save-note'),
+              onPressed: _save,
+              // Full width and tall, like the Save button in the prototype.
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(54),
+                textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+              ),
+              child: const Text('Kaydet'),
+            ),
           ),
         ),
       ),
