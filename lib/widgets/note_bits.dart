@@ -94,11 +94,12 @@ class DueLabel extends StatelessWidget {
     final due = note.dueAt!;
     final overdue = note.isOverdue(t);
     final today = !note.done && isSameDay(due, t);
-    final color = overdue
-        ? theme.colorScheme.error
-        : today
-        ? theme.colorScheme.primary
-        : theme.colorScheme.onSurfaceVariant;
+    final color =
+        overdue
+            ? theme.colorScheme.error
+            : today
+            ? theme.colorScheme.primary
+            : theme.colorScheme.onSurfaceVariant;
     final countdown = note.done ? 'Tamamlandı' : formatCountdown(due, now: t);
     final when = formatDue(due, now: t);
     final text = countdown == 'Bugün' || countdown == 'Yarın' ? when : '$when · $countdown';

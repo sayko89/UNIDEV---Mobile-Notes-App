@@ -53,9 +53,7 @@ class _CalendarTabState extends State<CalendarTab> {
             children: [
               _monthHeader(context),
               const SizedBox(height: 8),
-              Card(
-                child: Padding(padding: const EdgeInsets.fromLTRB(8, 12, 8, 8), child: _monthGrid(context)),
-              ),
+              Card(child: Padding(padding: const EdgeInsets.fromLTRB(8, 12, 8, 8), child: _monthGrid(context))),
               const SizedBox(height: 20),
               _dayHeader(context, dayNotes.length),
               const SizedBox(height: 8),
@@ -135,10 +133,11 @@ class _CalendarTabState extends State<CalendarTab> {
     return InkWell(
       key: Key(key),
       borderRadius: BorderRadius.circular(14),
-      onTap: () => setState(() {
-        _selected = day;
-        if (!inMonth) _month = DateTime(day.year, day.month);
-      }),
+      onTap:
+          () => setState(() {
+            _selected = day;
+            if (!inMonth) _month = DateTime(day.year, day.month);
+          }),
       child: SizedBox(
         height: 50,
         child: Column(
@@ -157,11 +156,12 @@ class _CalendarTabState extends State<CalendarTab> {
                 '${day.day}',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: isToday || selected ? FontWeight.w700 : FontWeight.w500,
-                  color: selected
-                      ? theme.colorScheme.onPrimary
-                      : inMonth
-                      ? null
-                      : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.45),
+                  color:
+                      selected
+                          ? theme.colorScheme.onPrimary
+                          : inMonth
+                          ? null
+                          : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.45),
                 ),
               ),
             ),
@@ -204,10 +204,7 @@ class _CalendarTabState extends State<CalendarTab> {
             ),
           ),
           if (count > 0)
-            Text(
-              '$count not',
-              style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-            ),
+            Text('$count not', style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         ],
       ),
     );
@@ -226,11 +223,12 @@ class _CalendarTabState extends State<CalendarTab> {
             const SizedBox(height: 12),
             FilledButton.tonalIcon(
               key: const Key('add-note-on-day'),
-              onPressed: () => openNoteEditor(
-                context,
-                widget.controller,
-                initialDue: DateTime(_selected.year, _selected.month, _selected.day, 9),
-              ),
+              onPressed:
+                  () => openNoteEditor(
+                    context,
+                    widget.controller,
+                    initialDue: DateTime(_selected.year, _selected.month, _selected.day, 9),
+                  ),
               icon: const Icon(Icons.add),
               label: const Text('Bu güne not ekle'),
             ),

@@ -199,7 +199,13 @@ void main() {
       expect(note.dueAt, due);
       expect(note.done, isTrue);
 
-      note = await controller.update(note, title: 'Sınav!', content: '', category: 'Okul', dueAt: DateTime(2026, 11, 2, 10));
+      note = await controller.update(
+        note,
+        title: 'Sınav!',
+        content: '',
+        category: 'Okul',
+        dueAt: DateTime(2026, 11, 2, 10),
+      );
       expect(note.done, isFalse);
 
       note = await controller.update(note, title: 'Sınav!', content: '', category: 'Okul', dueAt: null);

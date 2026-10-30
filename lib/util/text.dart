@@ -81,8 +81,7 @@ String formatDayTitle(DateTime t) => '${t.day} ${_months[t.month - 1]}, ${_weekd
 String formatMonthTitle(DateTime t) => '${_months[t.month - 1]} ${t.year}';
 
 /// Short month name in capitals for date tiles: "EKİ".
-String shortMonthUpper(DateTime t) =>
-    _shortMonths[t.month - 1].replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase();
+String shortMonthUpper(DateTime t) => _shortMonths[t.month - 1].replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase();
 
 /// "14:05".
 String formatTime(DateTime t) => _time(t);

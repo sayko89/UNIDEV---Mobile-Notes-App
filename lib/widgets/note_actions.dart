@@ -9,9 +9,7 @@ import '../screens/note_edit_screen.dart';
 /// to [initialDue] (used by "Bu güne not ekle" in the calendar).
 Future<void> openNoteEditor(BuildContext context, NotesController controller, {Note? note, DateTime? initialDue}) {
   return Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => NoteEditScreen(controller: controller, note: note, initialDue: initialDue),
-    ),
+    MaterialPageRoute<void>(builder: (_) => NoteEditScreen(controller: controller, note: note, initialDue: initialDue)),
   );
 }
 

@@ -25,14 +25,18 @@ class UpcomingTab extends StatelessWidget {
         final upcoming = controller.upcoming(now: now);
         final done = controller.completed().take(10).toList();
 
-        final groups = <(String, List<Note>)>[
-          ('Gecikenler', overdue),
-          ('Bugün', upcoming.where((n) => daysUntil(n.dueAt!, now) == 0).toList()),
-          ('Yarın', upcoming.where((n) => daysUntil(n.dueAt!, now) == 1).toList()),
-          ('Bu hafta', upcoming.where((n) => daysUntil(n.dueAt!, now) > 1 && daysUntil(n.dueAt!, now) < 7).toList()),
-          ('Daha sonra', upcoming.where((n) => daysUntil(n.dueAt!, now) >= 7).toList()),
-          ('Tamamlananlar', done),
-        ].where((group) => group.$2.isNotEmpty).toList();
+        final groups =
+            <(String, List<Note>)>[
+              ('Gecikenler', overdue),
+              ('Bugün', upcoming.where((n) => daysUntil(n.dueAt!, now) == 0).toList()),
+              ('Yarın', upcoming.where((n) => daysUntil(n.dueAt!, now) == 1).toList()),
+              (
+                'Bu hafta',
+                upcoming.where((n) => daysUntil(n.dueAt!, now) > 1 && daysUntil(n.dueAt!, now) < 7).toList(),
+              ),
+              ('Daha sonra', upcoming.where((n) => daysUntil(n.dueAt!, now) >= 7).toList()),
+              ('Tamamlananlar', done),
+            ].where((group) => group.$2.isNotEmpty).toList();
 
         return SafeArea(
           bottom: false,
@@ -50,7 +54,7 @@ class UpcomingTab extends StatelessWidget {
                         upcoming.isEmpty && overdue.isEmpty
                             ? 'Bekleyen hatırlatma yok'
                             : '${upcoming.length + overdue.length} bekleyen hatırlatma'
-                                  '${overdue.isEmpty ? '' : ', ${overdue.length} gecikmiş'}',
+                                '${overdue.isEmpty ? '' : ', ${overdue.length} gecikmiş'}',
                         style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                       ),
                     ],
@@ -148,11 +152,12 @@ class _UpcomingTile extends StatelessWidget {
                       countdown,
                       style: theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: overdue
-                            ? theme.colorScheme.error
-                            : note.done
-                            ? muted
-                            : theme.colorScheme.primary,
+                        color:
+                            overdue
+                                ? theme.colorScheme.error
+                                : note.done
+                                ? muted
+                                : theme.colorScheme.primary,
                       ),
                     ),
                   ],

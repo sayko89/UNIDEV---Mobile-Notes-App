@@ -4,7 +4,8 @@ import '../models/note.dart';
 /// always has something overdue, something today and something coming up.
 List<Note> demoNotes(DateTime now) {
   final today = DateTime(now.year, now.month, now.day);
-  DateTime at(int days, int hour, [int minute = 0]) => DateTime(today.year, today.month, today.day + days, hour, minute);
+  DateTime at(int days, int hour, [int minute = 0]) =>
+      DateTime(today.year, today.month, today.day + days, hour, minute);
 
   Note note(
     String id,
@@ -30,9 +31,10 @@ List<Note> demoNotes(DateTime now) {
   }
 
   // Today's reminders sit a little before and after the current time.
-  final laterToday = now.add(const Duration(hours: 2)).isBefore(today.add(const Duration(days: 1)))
-      ? now.add(const Duration(hours: 2))
-      : today.add(const Duration(hours: 23, minutes: 30));
+  final laterToday =
+      now.add(const Duration(hours: 2)).isBefore(today.add(const Duration(days: 1)))
+          ? now.add(const Duration(hours: 2))
+          : today.add(const Duration(hours: 23, minutes: 30));
 
   return [
     note(
@@ -75,14 +77,7 @@ List<Note> demoNotes(DateTime now) {
       const Duration(days: 9),
       dueAt: at(-1, 17),
     ),
-    note(
-      'demo-6',
-      'Elektrik faturası',
-      'Son ödeme günü',
-      'Genel',
-      const Duration(days: 12),
-      dueAt: at(6, 12),
-    ),
+    note('demo-6', 'Elektrik faturası', 'Son ödeme günü', 'Genel', const Duration(days: 12), dueAt: at(6, 12)),
     note(
       'demo-7',
       'Proje sunumu provası',

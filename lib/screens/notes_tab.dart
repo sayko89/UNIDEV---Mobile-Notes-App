@@ -201,16 +201,17 @@ class _NotesTabState extends State<NotesTab> {
         decoration: InputDecoration(
           hintText: 'Notlarda ara',
           prefixIcon: const Icon(Icons.search),
-          suffixIcon: _search.text.isEmpty
-              ? null
-              : IconButton(
-                  tooltip: 'Aramayı temizle',
-                  icon: const Icon(Icons.close),
-                  onPressed: () {
-                    _search.clear();
-                    _controller.setQuery('');
-                  },
-                ),
+          suffixIcon:
+              _search.text.isEmpty
+                  ? null
+                  : IconButton(
+                    tooltip: 'Aramayı temizle',
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      _search.clear();
+                      _controller.setQuery('');
+                    },
+                  ),
         ),
       ),
     );
@@ -223,9 +224,10 @@ class _NotesTabState extends State<NotesTab> {
         padding: const EdgeInsets.only(right: 8),
         child: ChoiceChip(
           key: Key('filter-${category ?? 'all'}'),
-          avatar: category == null
-              ? null
-              : Icon(categoryStyle(category).icon, size: 16, color: categoryStyle(category).color),
+          avatar:
+              category == null
+                  ? null
+                  : Icon(categoryStyle(category).icon, size: 16, color: categoryStyle(category).color),
           label: Text('$label  ${_controller.count(category)}'),
           selected: selected == category,
           onSelected: (_) => _controller.setFilter(category),
@@ -238,10 +240,7 @@ class _NotesTabState extends State<NotesTab> {
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(20, 12, 12, 4),
-        children: [
-          chip(null, 'Tümü'),
-          for (final category in _controller.categories) chip(category, category),
-        ],
+        children: [chip(null, 'Tümü'), for (final category in _controller.categories) chip(category, category)],
       ),
     );
   }
