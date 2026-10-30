@@ -55,17 +55,30 @@ async function find(page, name) {
   throw new Error(`not found: ${name}`);
 }
 
+/** Scrolls the Flutter view (with the mouse wheel) until [name] is on screen; returns its box. */
+async function onScreen(page, name) {
+  for (let i = 0; i < 6; i++) {
+    const box = await (await find(page, name)).boundingBox();
+    if (!box) throw new Error(`no box for: ${name}`);
+    const viewport = page.viewportSize();
+    const centre = box.y + box.height / 2;
+    const inNavigationBar = box.y >= viewport.height - 90 && box.y + box.height <= viewport.height;
+    if (box.y >= 0 && (centre <= viewport.height - 90 || inNavigationBar)) return box;
+    await page.mouse.move(viewport.width / 2, viewport.height / 2);
+    await page.mouse.wheel(0, box.y < 0 ? -300 : 300);
+    await page.waitForTimeout(500);
+  }
+  throw new Error(`could not scroll to: ${name}`);
+}
+
 async function tap(page, name, wait = 900) {
-  const el = await find(page, name);
-  const box = await el.boundingBox();
-  if (!box) throw new Error(`no box for: ${name}`);
+  const box = await onScreen(page, name);
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
   await page.waitForTimeout(wait);
 }
 
 async function longPress(page, name) {
-  const el = await find(page, name);
-  const box = await el.boundingBox();
+  const box = await onScreen(page, name);
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
   await page.waitForTimeout(1500);
@@ -123,7 +136,7 @@ await step('menu', async () => {
 
 await step('filter', async () => {
   const { context, page } = await open('&demo=1');
-  await tap(page, /^Okul\s+1$/); // the filter chip ("Okul  1"), not the category label on a card
+  await tap(page, /^Okul\s+\d+$/); // the filter chip ("Okul  2"), not the category label on a card
   await shot(page, '05-filter.png');
   await context.close();
 });
@@ -131,9 +144,6 @@ await step('filter', async () => {
 await step('editor with reminder', async () => {
   const { context, page } = await open('&demo=1');
   await tap(page, 'Bilgisayar Ağları vizesi', 1200);
-  const labels = await page.$$eval('flt-semantics', (nodes) =>
-    nodes.map((n) => n.getAttribute('aria-label') || '').filter(Boolean).slice(0, 25));
-  note(`detail labels: ${JSON.stringify(labels)}`);
   await tap(page, /^Düzenle$/, 1200);
   await shot(page, '08-reminder.png');
   await context.close();
